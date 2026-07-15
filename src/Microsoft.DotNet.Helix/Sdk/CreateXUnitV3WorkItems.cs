@@ -113,7 +113,11 @@ namespace Microsoft.DotNet.Helix.Sdk
                 ? "--results-directory . --report-xunit-xml --report-xunit-xml-filename testResults.xml --auto-reporters off"
                 : "-xml testResults.xml -noAutoReporters";
 
-            string command = $"{PathToDotnet} exec --roll-forward Major " +
+            // Intentionally do not pass --roll-forward so each work item runs on the runtime
+            // matching its target framework. A blanket roll-forward (e.g. Major) can silently
+            // run a net8.0 assembly on a net9.0 runtime, masking a missing runtime and causing
+            // silent loss of multi-TFM coverage. See https://github.com/dotnet/arcade/issues/17000.
+            string command = $"{PathToDotnet} exec " +
                 $"--runtimeconfig {assemblyBaseName}.runtimeconfig.json " +
                 $"--depsfile {assemblyBaseName}.deps.json " +
                 $"{assemblyName} {resultArgs}" +
